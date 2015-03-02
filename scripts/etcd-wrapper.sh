@@ -22,4 +22,5 @@ exec /usr/bin/etcd \
 	-initial-advertise-peer-urls $PEER_URLS \
 	-advertise-client-urls $CLIENT_URLS \
 	-listen-peer-urls http://0.0.0.0:7001,http://0.0.0.0:2380 \
-	-listen-client-urls http://0.0.0.0:4001,http://0.0.0.0:2379
+	-listen-client-urls http://0.0.0.0:4001,http://0.0.0.0:2379 \
+	-cluster-remove-delay 90
