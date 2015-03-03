@@ -1,2 +1,2 @@
 #!/bin/sh
-docker push sgarlick987/etcd
+docker push sgarlick987/consul

@@ -1,21 +1,47 @@
 # Latest Ubuntu LTS
 FROM ubuntu:14.04
 
-WORKDIR /tmp
-
-# Install etcd
+# Install Ansible
 RUN apt-get update && \
-	 apt-get install -y curl
-RUN curl -L https://github.com/coreos/etcd/releases/download/v2.0.3/etcd-v2.0.3-linux-amd64.tar.gz -o etcd-v2.0.3-linux-amd64.tar.gz
-RUN tar xzvf /tmp/etcd-v2.0.3-linux-amd64.tar.gz
-RUN cp etcd-v2.0.3-linux-amd64/etcd /usr/bin/etcd
+    apt-get install --no-install-recommends -y software-properties-common && \
+    apt-add-repository ppa:ansible/ansible && \
+    apt-get update && \
+    apt-get install -y ansible
 
-# Cleanup
+# Make sure only ansible host is localhost
+RUN echo '[local]\nlocalhost\n' > /etc/ansible/hosts
+
+# Copy our ansible files
+COPY playbook.yml /tmp/playbook.yml
+COPY roles /tmp/roles/
+
+# Provision the image
+RUN ansible-playbook --connection=local /tmp/playbook.yml
+
+# Remove ansible
+RUN apt-get purge -y --auto-remove ansible software-properties-common
+
+# Packages to help install consul
+RUN apt-get install -y curl unzip
+
+# Install Consul
+WORKDIR /tmp
+RUN curl -L \
+		https://dl.bintray.com/mitchellh/consul/0.5.0_linux_amd64.zip \ 
+		-o 0.5.0_linux_amd64.zip
+
+RUN unzip 0.5.0_linux_amd64.zip
+RUN cp consul /usr/bin/consul
+RUN mkdir /var/consul/
+
+# Cleanup files
 RUN rm -r ./*
+# Cleanup packages
+RUN apt-get purge -y --auto-remove curl unzip
 
 # Entry script
-COPY scripts/etcd-wrapper.sh /tmp/etcd-wrapper.sh
-RUN chmod -R 0500 /tmp/etcd-wrapper.sh
+COPY scripts/consul-wrapper.py /tmp/consul-wrapper.py
+RUN chmod -R 0500 /tmp/consul-wrapper.py
 
-EXPOSE 4001 7001 2379 2380
-ENTRYPOINT ["/tmp/etcd-wrapper.sh"]
+EXPOSE 8300 8301 8302 8400 8500 8600
+ENTRYPOINT ["/tmp/consul-wrapper.py"]
