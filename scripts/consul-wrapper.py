@@ -26,7 +26,7 @@ def main():
         })
 
     # Build join args using the other instances private ip address
-    joins = ["-retry-join {}".format(inst.private_ip_address)
+    joins = ["-retry-join={}".format(inst.private_ip_address)
              for inst in instances
              if inst.id != instance_id]
 
