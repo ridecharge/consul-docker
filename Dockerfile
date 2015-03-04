@@ -33,6 +33,8 @@ RUN curl -L \
 RUN unzip 0.5.0_linux_amd64.zip
 RUN cp consul /usr/bin/consul
 RUN mkdir /var/consul/
+COPY files/config.json /etc/consul
+RUN chmod 0400 /etc/consul
 
 # Cleanup files
 RUN rm -r ./*
@@ -41,7 +43,7 @@ RUN apt-get purge -y --auto-remove curl unzip
 
 # Entry script
 COPY scripts/consul-wrapper.py /tmp/consul-wrapper.py
-RUN chmod -R 0500 /tmp/consul-wrapper.py
+RUN chmod 0500 /tmp/consul-wrapper.py
 
 EXPOSE 8300 8301 8302 8400 8500 8600
 ENTRYPOINT ["/tmp/consul-wrapper.py"]

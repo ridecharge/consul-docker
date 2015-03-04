@@ -36,12 +36,15 @@ def main():
     	cmd,
         "agent",
         "-node={}".format(instance_id),
-        "-bind={}".format(instance_ip),
+        "-advertise={}".format(instance_ip),
+        '-bind=0.0.0.0',
+        '-client=0.0.0.0',
         '-data-dir=/var/consul',
+        '-config-file=/etc/consul',
         '-bootstrap-expect=6',
-        '-syslog',
         '-server',
-        "-dc={}".format(region)
+        "-dc={}".format(region),
+        '-log-level=debug'
     ]
     args.extend(joins)
 
