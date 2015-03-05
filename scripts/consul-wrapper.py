@@ -2,6 +2,7 @@
 import boto.utils
 import boto.ec2
 import os
+import sys
 import time
 
 
@@ -57,7 +58,9 @@ def main():
                      '-server']
     args += joins
     print(args)
+
     # Execute consul and replace this process
+    sys.stdout.flush()
     os.execl(cmd, *args)
 
 if __name__ == '__main__':
