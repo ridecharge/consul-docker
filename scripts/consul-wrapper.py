@@ -21,6 +21,7 @@ def main():
     # make sure instances are starting up before querying ec2
     instances = []
     while(not instances):
+        print(instances)
         time.sleep(10)
         # Get all the instances with the same Role and Environment as ours
         instances = ec2_conn.get_only_instances(
@@ -28,6 +29,7 @@ def main():
                 'tag:Role': 'consul',
                 'tag:Environment': instance_tags['Environment']
             })
+
 
     # Build join args using the other instances private ip address
     joins = ["-retry-join={}".format(inst.private_ip_address)
