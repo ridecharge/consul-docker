@@ -52,11 +52,11 @@ def main():
     ]
 
     if mode != 'client':
-        args.extend(['-bootstrap-expect=6',
-                     '-server'])
-
-    args.extend(joins)
-
+        print('mode: ', mode)
+        args += ['-bootstrap-expect=6',
+                     '-server']
+    args += joins
+    print(args)
     # Execute consul and replace this process
     os.execl(cmd, *args)
 
