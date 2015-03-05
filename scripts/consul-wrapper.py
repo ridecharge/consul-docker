@@ -27,9 +27,9 @@ def main():
         instances = ec2_conn.get_only_instances(
             filters={
                 'tag:Role': 'consul',
-                'tag:Environment': instance_tags['Environment']
+                'tag:Environment': instance_tags['Environment'],
+                'instance-state-name': 'running'
             })
-
 
     # Build join args using the other instances private ip address
     joins = ["-retry-join={}".format(inst.private_ip_address)
@@ -54,7 +54,7 @@ def main():
     if mode != 'client':
         args.extend(['-bootstrap-expect=6',
                      '-server'])
-    
+
     args.extend(joins)
 
     # Execute consul and replace this process
