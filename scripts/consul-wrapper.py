@@ -6,7 +6,8 @@ import time
 
 
 def main():
-	# API Connections
+        # API Connections
+    mode = os.environ.get('MODE', 'client')
     region = boto.utils.get_instance_identity()['document']['region']
     ec2_conn = boto.ec2.connect_to_region(region)
 
@@ -15,15 +16,17 @@ def main():
     instance_id = instance_metadata['instance-id']
     instance_ip = instance_metadata['local-ipv4']
     instance_tags = ec2_conn.get_only_instances(instance_id)[0].tags
-	
-	# make sure instances are starting up before querying ec2
-    time.sleep(10) 
-    # Get all the instances with the same Role and Environment as ours
-    instances = ec2_conn.get_only_instances(
-        filters={
-            'tag:Role': instance_tags['Role'],
-            'tag:Environment': instance_tags['Environment']
-        })
+
+    # make sure instances are starting up before querying ec2
+    instances = []
+    while(not instances):
+        time.sleep(10)
+        # Get all the instances with the same Role and Environment as ours
+        instances = ec2_conn.get_only_instances(
+            filters={
+                'tag:Role': 'consul',
+                'tag:Environment': instance_tags['Environment']
+            })
 
     # Build join args using the other instances private ip address
     joins = ["-retry-join={}".format(inst.private_ip_address)
@@ -33,7 +36,7 @@ def main():
     # Build consul command and arguments
     cmd = '/usr/bin/consul'
     args = [
-    	cmd,
+        cmd,
         "agent",
         "-node={}".format(instance_id),
         "-advertise={}".format(instance_ip),
@@ -41,11 +44,14 @@ def main():
         '-client=0.0.0.0',
         '-data-dir=/var/consul',
         '-config-file=/etc/consul',
-        '-bootstrap-expect=6',
-        '-server',
         "-dc={}".format(region),
         '-log-level=debug'
     ]
+
+    if mode != 'client':
+        args.extend(['-bootstrap-expect=6',
+                     '-server'])
+    
     args.extend(joins)
 
     # Execute consul and replace this process
