@@ -7,7 +7,6 @@ import time
 
 def main():
         # API Connections
-    mode = os.environ.get('MODE', 'client')
     region = boto.utils.get_instance_identity()['document']['region']
     ec2_conn = boto.ec2.connect_to_region(region)
 
@@ -16,6 +15,8 @@ def main():
     instance_id = instance_metadata['instance-id']
     instance_ip = instance_metadata['local-ipv4']
     instance_tags = ec2_conn.get_only_instances(instance_id)[0].tags
+
+    mode = 'server' if instance_tags['Role'] == 'consul' else 'client'
 
     # make sure instances are starting up before querying ec2
     instances = []
