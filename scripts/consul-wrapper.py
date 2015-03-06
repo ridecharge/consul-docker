@@ -22,7 +22,6 @@ def main():
     # make sure instances are starting up before querying ec2
     instances = []
     while(not instances):
-        print(instances)
         time.sleep(10)
         # Get all the instances with the same Role and Environment as ours
         instances = ec2_conn.get_only_instances(
@@ -31,6 +30,8 @@ def main():
                 'tag:Environment': instance_tags['Environment'],
                 'instance-state-name': 'running'
             })
+        print(instances)
+        print(not instances)
 
     # Build join args using the other instances private ip address
     joins = ["-retry-join={}".format(inst.private_ip_address)
@@ -52,15 +53,13 @@ def main():
         '-log-level=debug'
     ]
 
-    if mode != 'client':
-        print('mode: ', mode)
+    if mode == 'server':
         args += ['-bootstrap-expect=6',
                      '-server']
     args += joins
-    print(args)
 
     # Execute consul and replace this process
-    sys.stdout.flush()
+    print(args)
     os.execl(cmd, *args)
 
 if __name__ == '__main__':
