@@ -1,6 +1,9 @@
 # Latest Ubuntu LTS
 FROM ubuntu:14.04
 
+# Setup the user
+RUN useradd -U consul
+
 # Install Ansible
 RUN apt-get update && \
     apt-get install --no-install-recommends -y software-properties-common && \
@@ -35,6 +38,9 @@ RUN cp consul /usr/bin/consul
 RUN mkdir /var/consul/
 COPY files/config.json /etc/consul
 RUN chmod 0400 /etc/consul
+RUN chown consul:consul /etc/consul
+RUN chown consul:consul /usr/bin/consul
+RUN chown -R consul:consul /var/consul
 
 # Cleanup files
 RUN rm -r ./*
@@ -44,6 +50,8 @@ RUN apt-get purge -y --auto-remove curl unzip
 # Entry script
 COPY scripts/consul-wrapper.py /tmp/consul-wrapper.py
 RUN chmod 0500 /tmp/consul-wrapper.py
+RUN chown consul:consul /tmp/consul-wrapper.py
 
+USER consul
 EXPOSE 8300 8301 8302 8400 8500 8600
 ENTRYPOINT ["/tmp/consul-wrapper.py"]

@@ -30,8 +30,6 @@ def main():
                 'tag:Environment': instance_tags['Environment'],
                 'instance-state-name': 'running'
             })
-        print(instances)
-        print(not instances)
 
     # Build join args using the other instances private ip address
     joins = ["-retry-join={}".format(inst.private_ip_address)
@@ -49,8 +47,7 @@ def main():
         '-client=0.0.0.0',
         '-data-dir=/var/consul',
         '-config-file=/etc/consul',
-        "-dc={}".format(region),
-        '-log-level=debug'
+        "-dc={}".format(region)
     ]
 
     if mode == 'server':
