@@ -7,34 +7,43 @@ import time
 
 
 def main():
-        # API Connections
-    region = boto.utils.get_instance_identity()['document']['region']
-    ec2_conn = boto.ec2.connect_to_region(region)
+    # Defaults for local mode
+    mode = 'local'
+    instance_id = 'local'
+    instance_ip = '127.0.0.1'
+    region = 'local'
+    joins = None
 
-    # This instances info
-    instance_metadata = boto.utils.get_instance_metadata()
-    instance_id = instance_metadata['instance-id']
-    instance_ip = instance_metadata['local-ipv4']
-    instance_tags = ec2_conn.get_only_instances(instance_id)[0].tags
+    # Only do this if we are running in non local mode, IE on an ec2 server
+    if not os.getenv("LOCAL_MODE"):
+        region = boto.utils.get_instance_identity()['document']['region']
+        ec2_conn = boto.ec2.connect_to_region(region)
 
-    mode = 'server' if instance_tags['Role'] == 'consul' else 'client'
+        # This instances info
+        instance_metadata = boto.utils.get_instance_metadata()
+        instance_id = instance_metadata['instance-id']
+        instance_ip = instance_metadata['local-ipv4']
+        instance_tags = ec2_conn.get_only_instances(instance_id)[0].tags
 
-    # make sure instances are starting up before querying ec2
-    instances = []
-    while(not instances):
-        time.sleep(10)
-        # Get all the instances with the same Role and Environment as ours
-        instances = ec2_conn.get_only_instances(
-            filters={
-                'tag:Role': 'consul',
-                'tag:Environment': instance_tags['Environment'],
-                'instance-state-name': 'running'
-            })
+        # Determine if we are a server or client base on instance tags
+        mode = 'server' if instance_tags['Role'] == 'consul' else 'client'
 
-    # Build join args using the other instances private ip address
-    joins = ["-retry-join={}".format(inst.private_ip_address)
-             for inst in instances
-             if inst.id != instance_id]
+        # make sure instances are starting up before querying ec2
+        instances = []
+        while(not instances):
+            time.sleep(10)
+            # Get all the instances with the same Role and Environment as ours
+            instances = ec2_conn.get_only_instances(
+                filters={
+                    'tag:Role': 'consul',
+                    'tag:Environment': instance_tags['Environment'],
+                    'instance-state-name': 'running'
+                })
+
+        # Build join args using the other instances private ip address
+        joins = ["-retry-join={}".format(inst.private_ip_address)
+                 for inst in instances
+                 if inst.id != instance_id]
 
     # Build consul command and arguments
     cmd = '/usr/bin/consul'
@@ -51,9 +60,15 @@ def main():
     ]
 
     if mode == 'server':
-        args += ['-bootstrap-expect=6',
-                     '-server']
-    args += joins
+        args += ['-bootstrap-expect=6', '-server']
+
+    # Defining -bootstrap allows this node to become a leader 
+    # of a single node cluster for local dev
+    if mode == 'local':
+        args += ['-bootstrap', '-server']
+
+    if joins:
+        args += joins
 
     # Execute consul and replace this process
     print(args)

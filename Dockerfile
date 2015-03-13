@@ -53,5 +53,5 @@ RUN chmod 0500 /tmp/consul-wrapper.py
 RUN chown consul:consul /tmp/consul-wrapper.py
 
 USER consul
-EXPOSE 8300 8301 8302 8400 8500 8600
+EXPOSE 8300 8301/tcp 8301/udp 8500
 ENTRYPOINT ["/tmp/consul-wrapper.py"]
