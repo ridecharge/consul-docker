@@ -25,15 +25,12 @@ RUN ansible-playbook --connection=local /tmp/playbook.yml
 RUN apt-get purge -y --auto-remove ansible software-properties-common
 
 # Packages to help install consul
-RUN apt-get install -y curl unzip
+RUN apt-get install -y unzip
 
 # Install Consul
-WORKDIR /tmp
-RUN curl -L \
-		https://dl.bintray.com/mitchellh/consul/0.5.0_linux_amd64.zip \ 
-		-o 0.5.0_linux_amd64.zip
+ADD https://dl.bintray.com/mitchellh/consul/0.5.0_linux_amd64.zip /tmp/0.5.0_linux_amd64.zip
 
-RUN unzip 0.5.0_linux_amd64.zip
+RUN unzip /tmp/0.5.0_linux_amd64.zip
 RUN cp consul /usr/bin/consul
 RUN mkdir /var/consul/
 COPY files/config.json /etc/consul
@@ -43,9 +40,9 @@ RUN chown consul:consul /usr/bin/consul
 RUN chown -R consul:consul /var/consul
 
 # Cleanup files
-RUN rm -r ./*
+RUN rm -r /tmp/*
 # Cleanup packages
-RUN apt-get purge -y --auto-remove curl unzip
+RUN apt-get purge -y --auto-remove unzip
 
 # Entry script
 COPY scripts/consul-wrapper.py /tmp/consul-wrapper.py
