@@ -8,7 +8,7 @@ This mode starts consul as single node cluster and can be linked against by othe
 
 ```shell
 docker run --name consul -e LOCAL_MODE=true ridecharge/consul
-docker run --link consul:consul ridecharge/cf-versions
+docker run --link consul:consul ridecharge/cfversions
 ```
 
 Will run the cfversions app in a docker container linked to consul.  It'll have `CONSUL_PORT_8500_TCP_ADDR` and `CONSUL_PORT_8500_TCP_PORT` variables exposed and consul hostname populated.
