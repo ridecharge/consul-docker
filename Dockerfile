@@ -2,7 +2,7 @@
 FROM ridecharge/ansible
 
 # Setup the user
-RUN useradd -U consul
+RUN adduser --uid 2100 consul
 
 # Packages to help install consul
 RUN apt-get install -y unzip
