@@ -1,5 +1,5 @@
 # Latest Ubuntu LTS
-FROM ridecharge/ansible
+FROM registry.gocurb.internal:80/ansible
 
 # Setup the user
 RUN adduser --uid 2100 consul
