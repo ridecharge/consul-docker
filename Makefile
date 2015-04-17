@@ -5,10 +5,10 @@ all: build push clean
 
 build:
 	ansible-galaxy install -r requirements.yml -f
-	sudo docker build -t $(CONTAINER):latest . 
+	docker build -t $(CONTAINER):latest . 
 
 push:
-	sudo docker push $(CONTAINER)
+	docker push $(CONTAINER)
 
 clean:
 	rm -r roles
