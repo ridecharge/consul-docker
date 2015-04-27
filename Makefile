@@ -12,3 +12,4 @@ push:
 
 clean:
 	rm -r roles
+	docker rmi $(CONTAINER)
